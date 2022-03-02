@@ -1518,7 +1518,7 @@ func (d *Driver) get(id string, disableShifting bool, options graphdriver.MountO
 			}
 			return nil
 		}
-	} else if len(mountData) > pageSize {
+	} else if len(mountData) >= pageSize {
 		// Use relative paths and mountFrom when the mount data has exceeded
 		// the page size. The mount syscall fails if the mount data cannot
 		// fit within a page and relative links make the mount data much
