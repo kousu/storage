@@ -1298,17 +1298,15 @@ func (d *Driver) get(id string, disableShifting bool, options graphdriver.MountO
 	if unshare.IsRootless() {
 		logLevel = logrus.DebugLevel
 	}
+
 	optsList := options.Options
-	if len(optsList) == 0 {
-		optsList = strings.Split(d.options.mountOptions, ",")
-	} else {
-		// If metacopy=on is present in d.options.mountOptions it must be present in the mount
-		// options otherwise the kernel refuses to follow the metacopy xattr.
-		if hasMetacopyOption(strings.Split(d.options.mountOptions, ",")) && !hasMetacopyOption(options.Options) {
-			if d.usingMetacopy {
-				logrus.StandardLogger().Logf(logrus.DebugLevel, "Adding metacopy option, configured globally")
-				optsList = append(optsList, "metacopy=on")
-			}
+
+	// If metacopy=on is present in d.options.mountOptions it must be present in the mount
+	// options otherwise the kernel refuses to follow the metacopy xattr.
+	if hasMetacopyOption(strings.Split(d.options.mountOptions, ",")) && !hasMetacopyOption(optsList) {
+		if d.usingMetacopy {
+			logrus.StandardLogger().Logf(logrus.DebugLevel, "Adding metacopy option, configured globally")
+			optsList = append(optsList, "metacopy=on")
 		}
 	}
 	if !d.usingMetacopy {
