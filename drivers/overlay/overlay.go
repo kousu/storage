@@ -1301,14 +1301,22 @@ func (d *Driver) get(id string, disableShifting bool, options graphdriver.MountO
 
 	optsList := options.Options
 
-	// If metacopy=on is present in d.options.mountOptions it must be present in the mount
-	// options otherwise the kernel refuses to follow the metacopy xattr.
-	if hasMetacopyOption(strings.Split(d.options.mountOptions, ",")) && !hasMetacopyOption(optsList) {
-		if d.usingMetacopy {
-			logrus.StandardLogger().Logf(logrus.DebugLevel, "Adding metacopy option, configured globally")
-			optsList = append(optsList, "metacopy=on")
+	if len(optsList) == 0 {
+		// Fall back to driver-wide mount options
+		if len(d.options.mountOptions) != 0 {
+			optsList = strings.Split(d.options.mountOptions, ",")
+		}
+	} else {
+		// If metacopy=on is present in d.options.mountOptions it must be present in the mount
+		// options otherwise the kernel refuses to follow the metacopy xattr.
+		if hasMetacopyOption(strings.Split(d.options.mountOptions, ",")) && !hasMetacopyOption(optsList) {
+			if d.usingMetacopy {
+				logrus.StandardLogger().Logf(logrus.DebugLevel, "Adding metacopy option, configured globally")
+				optsList = append(optsList, "metacopy=on")
+			}
 		}
 	}
+
 	if !d.usingMetacopy {
 		if hasMetacopyOption(optsList) {
 			logrus.StandardLogger().Logf(logLevel, "Ignoring global metacopy option, not supported with booted kernel")
